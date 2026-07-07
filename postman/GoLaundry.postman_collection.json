@@ -1,0 +1,365 @@
+{
+  "info": {
+    "name": "GoLaundry API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"phone\": \"03001234567\",\n  \"password\": \"SecurePassword123!\",\n  \"password_confirm\": \"SecurePassword123!\",\n  \"full_name\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register", ""]
+            }
+          }
+        },
+        {
+          "name": "Login User (Password)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", ""]
+            }
+          }
+        },
+        {
+          "name": "Trigger OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"03001234567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/otp/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", "otp", ""]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP & Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"03001234567\",\n  \"otp_code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/otp/verify/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login", "otp", "verify", ""]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password (Code request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password", ""]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"otp_code\": \"123456\",\n  \"new_password\": \"NewSecurePassword123!\",\n  \"password_confirm\": \"NewSecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password", ""]
+            }
+          }
+        },
+        {
+          "name": "Social Login (Google/FB Mock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"GOOGLE\",\n  \"token\": \"mock-oauth-token-string\",\n  \"email\": \"oauthuser@example.com\",\n  \"full_name\": \"Google User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/social-login/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "social-login", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Johnathan Doe\",\n  \"profile_photo\": \"https://images.example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile", ""]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/refresh/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "token", "refresh", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Addresses",
+      "item": [
+        {
+          "name": "List Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/addresses/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "addresses", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_type\": \"HOME\",\n  \"address_line\": \"Suite 14, Block 5, Clifton, Karachi\",\n  \"latitude\": 24.8105,\n  \"longitude\": 67.0310,\n  \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/addresses/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "addresses", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations & Warehouse",
+      "item": [
+        {
+          "name": "Get Warehouse Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/locations/warehouse/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "locations", "warehouse", ""]
+            }
+          }
+        },
+        {
+          "name": "Validate Area (Distance)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 24.8050,\n  \"longitude\": 67.0250\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/locations/validate-area/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "locations", "validate-area", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services Catalog",
+      "item": [
+        {
+          "name": "List Active Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/services/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "services", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", ""]
+            }
+          }
+        },
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickup_address_id\": \"address-uuid-here\",\n  \"pickup_date\": \"2026-06-28\",\n  \"pickup_slot\": \"MORNING\",\n  \"special_instructions\": \"Please iron carefully.\",\n  \"items\": [\n    {\n      \"service_id\": \"service-uuid-here\",\n      \"quantity\": 3.0\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/dashboard/stats/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "dashboard", "stats", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Reports",
+      "item": [
+        {
+          "name": "Revenue Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/reports/revenue/?date_from=2026-06-01&date_to=2026-06-30",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "reports", "revenue", ""],
+              "query": [
+                { "key": "date_from", "value": "2026-06-01" },
+                { "key": "date_to", "value": "2026-06-30" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "access_token", "value": "paste_access_token_here" },
+    { "key": "refresh_token", "value": "paste_refresh_token_here" }
+  ]
+}
