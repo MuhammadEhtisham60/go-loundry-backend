@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 import environ
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -18,7 +19,12 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-fallback-secret-key-chan
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
+# Read RENDER_EXTERNAL_HOSTNAME automatically when running on Render
+_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=([_render_host] if _render_host else ["localhost", "127.0.0.1"]),
+)
 
 # Application definition
 INSTALLED_APPS = [
@@ -54,6 +60,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # CORS middleware must be placed before common middleware
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files efficiently
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -111,6 +118,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# WhiteNoise compressed static file storage (used in production via STORAGES override)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
