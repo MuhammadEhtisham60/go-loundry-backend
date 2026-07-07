@@ -19,12 +19,15 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-fallback-secret-key-chan
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-# Read RENDER_EXTERNAL_HOSTNAME automatically when running on Render
-_render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-ALLOWED_HOSTS = env.list(
-    "ALLOWED_HOSTS",
-    default=([_render_host] if _render_host else ["localhost", "127.0.0.1"]),
-)
+# Hosts allowed to serve this Django application.
+# In production (Render), set ALLOWED_HOSTS env var to your domain, e.g.:
+#   go-loundry-backend.onrender.com
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
+# CSRF trusted origins — required for Django CSRF to work over HTTPS.
+# In production, set CSRF_TRUSTED_ORIGINS env var, e.g.:
+#   https://go-loundry-backend.onrender.com
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 # Application definition
 INSTALLED_APPS = [
