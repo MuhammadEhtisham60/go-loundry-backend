@@ -22,12 +22,21 @@ DEBUG = env.bool("DEBUG", default=False)
 # Hosts allowed to serve this Django application.
 # In production (Render), set ALLOWED_HOSTS env var to your domain, e.g.:
 #   go-loundry-backend.onrender.com
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "go-loundry-backend.onrender.com"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
+# Render automatically sets RENDER_EXTERNAL_HOSTNAME — add it so no manual config needed
+RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
 
 # CSRF trusted origins — required for Django CSRF to work over HTTPS.
 # In production, set CSRF_TRUSTED_ORIGINS env var, e.g.:
 #   https://go-loundry-backend.onrender.com
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["https://go-loundry-backend.onrender.com"])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+
+# Auto-add Render hostname to CSRF trusted origins
+if RENDER_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOSTNAME}")
 
 # Application definition
 INSTALLED_APPS = [
