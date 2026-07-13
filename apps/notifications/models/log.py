@@ -8,6 +8,8 @@ User = get_user_model()
 class NotificationType(models.TextChoices):
     PUSH = "PUSH", "Push Notification"
     SMS = "SMS", "SMS"
+    EMAIL = "EMAIL", "Email"
+
 
 
 class NotificationLog(models.Model):

@@ -43,3 +43,7 @@ STORAGES = {
     },
 }
 
+# Email Backend for production
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+

@@ -26,12 +26,14 @@ class AuthService:
         phone = validated_data.get("phone")
         password = validated_data.get("password")
         full_name = validated_data.get("full_name", "")
+        user_type = validated_data.get("user_type", "user")
 
         user = User.objects.create_user(
             email=email,
             phone=phone,
             password=password,
             full_name=full_name,
+            user_type=user_type,
         )
         return user
 
@@ -74,13 +76,13 @@ class AuthService:
         user.otp_expires_at = timezone.now() + timedelta(minutes=5)
         user.save()
 
-        # Simulate sending OTP
+        # Send OTP
         message = f"Your GoLaundry verification code is {otp}. Valid for 5 minutes."
         if user.phone:
             NotificationService.send_sms(user.phone, message)
         if user.email:
-            NotificationService.send_push(
-                user.id, "Verification Code", message
+            NotificationService.send_email(
+                user.id, user.email, "Verification Code", message
             )
 
         return user

@@ -17,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             "phone",
             "full_name",
             "role",
+            "user_type",
             "profile_photo",
             "is_blocked",
             "created_at",

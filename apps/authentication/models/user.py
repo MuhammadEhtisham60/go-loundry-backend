@@ -12,6 +12,11 @@ class UserRole(models.TextChoices):
     SUPER_ADMIN = "SUPER_ADMIN", "Super Admin"
 
 
+class UserType(models.TextChoices):
+    USER = "user", "User"
+    ADMIN = "admin", "Admin"
+
+
 class UserManager(BaseUserManager):
     """
     Custom user manager where email/phone is the unique identifier
@@ -74,6 +79,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     profile_photo = models.URLField(max_length=500, null=True, blank=True)
     role = models.CharField(
         max_length=20, choices=UserRole.choices, default=UserRole.CUSTOMER
+    )
+    user_type = models.CharField(
+        max_length=10, choices=UserType.choices, default=UserType.USER
     )
     is_blocked = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

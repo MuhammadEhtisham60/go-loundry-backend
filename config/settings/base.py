@@ -192,3 +192,24 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+# Email / SMTP Configuration
+EMAIL_HOST = env("SMTP_HOST", default="smtp.gmail.com")
+EMAIL_PORT = env.int("SMTP_PORT", default=465)
+EMAIL_HOST_USER = env("SMTP_USER", default="")
+EMAIL_HOST_PASSWORD = env("SMTP_PASS", default="")
+DEFAULT_FROM_EMAIL = env("SMTP_FROM", default="GoLaundry <noreply@golaundry.com>")
+
+# SMTP Security
+SMTP_SECURE = env.bool("SMTP_SECURE", default=True)
+if SMTP_SECURE:
+    if EMAIL_PORT == 465:
+        EMAIL_USE_SSL = True
+        EMAIL_USE_TLS = False
+    else:
+        EMAIL_USE_SSL = False
+        EMAIL_USE_TLS = True
+else:
+    EMAIL_USE_SSL = False
+    EMAIL_USE_TLS = False
+
+

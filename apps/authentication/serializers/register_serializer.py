@@ -22,6 +22,7 @@ class RegisterSerializer(serializers.Serializer):
         write_only=True, required=False, allow_null=True, default=None
     )
     full_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
+    user_type = serializers.ChoiceField(choices=[("user", "User"), ("admin", "Admin")], required=False, default="user")
 
     def validate(self, data):
         email = data.get("email")
