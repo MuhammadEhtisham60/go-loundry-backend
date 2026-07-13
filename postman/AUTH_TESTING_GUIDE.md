@@ -15,7 +15,7 @@ The GoLaundry collection is configured to handle JWT token lifecycles automatica
 | `refresh_token` | `paste_refresh_token_here` | The long-lived JWT token used to request a new access token. |
 
 > [!TIP]
-> **Zero Manual Copy-Paste**: We have pre-configured Postman **Tests Scripts** (post-request hooks) directly inside [GoLaundry.postman_collection.json](file:///c:/Users/l/Documents/MARN/products/live-version/go-loundry-backend/postman/GoLaundry.postman_collection.json) and [golaundry_api_collection.json](file:///c:/Users/l/Documents/MARN/products/live-version/go-loundry-backend/golaundry_api_collection.json). Whenever you execute any login, OTP verification, or social authentication requests, Postman will dynamically update `access_token` and `refresh_token` in your collection variables.
+> **Zero Manual Copy-Paste**: We have pre-configured Postman **Tests Scripts** (post-request hooks) directly inside [GoLaundry.postman_collection.json](./GoLaundry.postman_collection.json) and [golaundry_api_collection.json](../golaundry_api_collection.json). Whenever you execute any login, OTP verification, or social authentication requests, Postman will dynamically update `access_token` and `refresh_token` in your collection variables.
 
 ---
 
