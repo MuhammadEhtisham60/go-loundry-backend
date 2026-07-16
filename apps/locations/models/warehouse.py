@@ -12,6 +12,7 @@ class WarehouseSetting(models.Model):
     max_service_radius_km = models.DecimalField(
         max_digits=5, decimal_places=2, default=15.00
     )
+    address = models.CharField(max_length=255, default="", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -19,4 +20,4 @@ class WarehouseSetting(models.Model):
         db_table = "warehouse_settings"
 
     def __str__(self) -> str:
-        return f"Warehouse (Lat: {self.latitude}, Lon: {self.longitude}, Max Radius: {self.max_service_radius_km} KM)"
+        return f"Warehouse (Lat: {self.latitude}, Lon: {self.longitude}, Max Radius: {self.max_service_radius_km} KM, Address: {self.address})"

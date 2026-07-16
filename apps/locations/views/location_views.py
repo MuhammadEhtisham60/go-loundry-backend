@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.locations.models import WarehouseSetting
 from apps.locations.services import LocationService
 from apps.locations.selectors import LocationSelector
 from apps.locations.serializers import (
@@ -17,8 +18,8 @@ from common.responses.standard import StandardResponse
 
 class WarehouseSettingView(APIView):
     """
-    API View to retrieve and update warehouse configurations.
-    GET is public; PUT requires Super Admin.
+    API View to list and create warehouse configurations.
+    GET is public; POST requires Super Admin.
     """
 
     def get_permissions(self):
@@ -27,36 +28,94 @@ class WarehouseSettingView(APIView):
         return [IsSuperAdmin()]
 
     def get(self, request: Request) -> Response:
-        warehouse = LocationSelector.get_warehouse_setting()
-        serializer = WarehouseSettingSerializer(warehouse)
+        warehouses = WarehouseSetting.objects.all().order_by("-created_at")
+        serializer = WarehouseSettingSerializer(warehouses, many=True)
         return StandardResponse(
             data=serializer.data,
             message="Warehouse settings retrieved.",
             status=status.HTTP_200_OK,
         )
 
-    def put(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         serializer = WarehouseSettingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        warehouse = LocationService.update_warehouse(
-            latitude=serializer.validated_data["latitude"],
-            longitude=serializer.validated_data["longitude"],
-            radius_km=serializer.validated_data["max_service_radius_km"],
-        )
-
-        result_serializer = WarehouseSettingSerializer(warehouse)
+        warehouse = serializer.save()
         return StandardResponse(
-            data=result_serializer.data,
-            message="Warehouse settings updated successfully.",
-            status=status.HTTP_200_OK,
+            data=WarehouseSettingSerializer(warehouse).data,
+            message="Warehouse settings created successfully.",
+            status=status.HTTP_201_CREATED,
         )
+
+
+class WarehouseDetailView(APIView):
+    """
+    API View to retrieve, update, and delete a specific warehouse configuration.
+    GET is public; PUT and DELETE require Super Admin.
+    """
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsSuperAdmin()]
+
+    def get(self, request: Request, pk: int) -> Response:
+        try:
+            warehouse = WarehouseSetting.objects.get(pk=pk)
+            serializer = WarehouseSettingSerializer(warehouse)
+            return StandardResponse(
+                data=serializer.data,
+                message="Warehouse settings retrieved.",
+                status=status.HTTP_200_OK,
+            )
+        except WarehouseSetting.DoesNotExist:
+            return StandardResponse(
+                data=None,
+                message="Warehouse not found.",
+                status=status.HTTP_404_NOT_FOUND,
+                success=False,
+            )
+
+    def put(self, request: Request, pk: int) -> Response:
+        try:
+            warehouse = WarehouseSetting.objects.get(pk=pk)
+            serializer = WarehouseSettingSerializer(warehouse, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            warehouse = serializer.save()
+            return StandardResponse(
+                data=WarehouseSettingSerializer(warehouse).data,
+                message="Warehouse settings updated successfully.",
+                status=status.HTTP_200_OK,
+            )
+        except WarehouseSetting.DoesNotExist:
+            return StandardResponse(
+                data=None,
+                message="Warehouse not found.",
+                status=status.HTTP_404_NOT_FOUND,
+                success=False,
+            )
+
+    def delete(self, request: Request, pk: int) -> Response:
+        try:
+            warehouse = WarehouseSetting.objects.get(pk=pk)
+            warehouse.delete()
+            return StandardResponse(
+                data=None,
+                message="Warehouse settings deleted successfully.",
+                status=status.HTTP_200_OK,
+            )
+        except WarehouseSetting.DoesNotExist:
+            return StandardResponse(
+                data=None,
+                message="Warehouse not found.",
+                status=status.HTTP_404_NOT_FOUND,
+                success=False,
+            )
 
 
 class DeliveryTierView(APIView):
     """
-    API View to list and create delivery tiers.
-    GET is public; POST requires Super Admin.
+    API View to list and create/replace delivery tiers.
+    GET is public; POST and PUT require Super Admin.
     """
 
     def get_permissions(self):
@@ -81,6 +140,16 @@ class DeliveryTierView(APIView):
             data=DeliveryTierSerializer(tier).data,
             message="Delivery tier created successfully.",
             status=status.HTTP_201_CREATED,
+        )
+
+    def put(self, request: Request) -> Response:
+        serializer = DeliveryTierSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        tiers = LocationService.bulk_update_tiers(serializer.validated_data)
+        return StandardResponse(
+            data=DeliveryTierSerializer(tiers, many=True).data,
+            message="Delivery tiers saved successfully.",
+            status=status.HTTP_200_OK,
         )
 
 

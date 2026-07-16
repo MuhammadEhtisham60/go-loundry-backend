@@ -24,20 +24,42 @@ class LocationService:
                 latitude=Decimal("24.8138"),
                 longitude=Decimal("67.0336"),
                 max_service_radius_km=Decimal("15.00"),
+                address="Lahore Central Warehouse",
             )
         return warehouse
 
     @staticmethod
-    def update_warehouse(latitude: Decimal, longitude: Decimal, radius_km: Decimal) -> WarehouseSetting:
+    def update_warehouse(
+        latitude: Decimal, longitude: Decimal, radius_km: Decimal, address: str = ""
+    ) -> WarehouseSetting:
         """
-        Updates the warehouse coordinates and maximum operational range.
+        Updates the warehouse coordinates, address, and maximum operational range.
         """
         warehouse = LocationService.get_or_default_warehouse()
         warehouse.latitude = latitude
         warehouse.longitude = longitude
         warehouse.max_service_radius_km = radius_km
+        warehouse.address = address
         warehouse.save()
         return warehouse
+
+    @staticmethod
+    def bulk_update_tiers(tiers_data: list) -> list:
+        """
+        Atomically deletes all existing delivery tiers and replaces them with new ones.
+        """
+        from django.db import transaction
+        with transaction.atomic():
+            DeliveryTier.objects.all().delete()
+            created_tiers = []
+            for item in tiers_data:
+                tier = DeliveryTier.objects.create(
+                    min_distance_km=item["min_distance_km"],
+                    max_distance_km=item["max_distance_km"],
+                    charge=item["charge"],
+                )
+                created_tiers.append(tier)
+            return created_tiers
 
     @staticmethod
     def get_delivery_charge(distance_km: float) -> Decimal:
@@ -68,22 +90,35 @@ class LocationService:
     @staticmethod
     def validate_service_area(latitude: float, longitude: float) -> Dict[str, Any]:
         """
-        Calculates distance from client address to warehouse,
+        Calculates distance from client address to closest warehouse,
         verifying if it's within radius bounds, and calculates delivery fees.
         """
-        warehouse = LocationService.get_or_default_warehouse()
-        distance = MapsService.calculate_distance(
-            latitude, longitude, warehouse.latitude, warehouse.longitude
-        )
+        warehouses = WarehouseSetting.objects.all()
+        if not warehouses.exists():
+            # Fallback default if none exist
+            warehouse = LocationService.get_or_default_warehouse()
+            warehouses = [warehouse]
 
-        is_valid = Decimal(str(distance)) <= warehouse.max_service_radius_km
-        charge = LocationService.get_delivery_charge(distance) if is_valid else Decimal("0.00")
+        best_warehouse = None
+        min_distance = float('inf')
+
+        for w in warehouses:
+            dist = MapsService.calculate_distance(
+                latitude, longitude, w.latitude, w.longitude
+            )
+            if dist < min_distance:
+                min_distance = dist
+                best_warehouse = w
+
+        is_valid = Decimal(str(min_distance)) <= best_warehouse.max_service_radius_km
+        charge = LocationService.get_delivery_charge(min_distance) if is_valid else Decimal("0.00")
 
         return {
             "is_valid": is_valid,
-            "distance_km": distance,
+            "distance_km": min_distance,
             "delivery_charge": charge,
-            "warehouse_latitude": warehouse.latitude,
-            "warehouse_longitude": warehouse.longitude,
-            "max_service_radius_km": warehouse.max_service_radius_km,
+            "warehouse_latitude": best_warehouse.latitude,
+            "warehouse_longitude": best_warehouse.longitude,
+            "warehouse_address": best_warehouse.address,
+            "max_service_radius_km": best_warehouse.max_service_radius_km,
         }

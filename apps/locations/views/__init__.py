@@ -1,5 +1,6 @@
 from apps.locations.views.location_views import (
     WarehouseSettingView,
+    WarehouseDetailView,
     DeliveryTierView,
     DeliveryTierDetailView,
     ValidateAreaView,
@@ -7,6 +8,7 @@ from apps.locations.views.location_views import (
 
 __all__ = [
     "WarehouseSettingView",
+    "WarehouseDetailView",
     "DeliveryTierView",
     "DeliveryTierDetailView",
     "ValidateAreaView",

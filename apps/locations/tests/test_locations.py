@@ -37,6 +37,7 @@ class LocationsTests(APITestCase):
             longitude=Decimal("67.0336"),
             max_service_radius_km=Decimal("15.00"),
         )
+        self.warehouse_detail_url = reverse("locations:warehouse_detail", kwargs={"pk": self.warehouse.pk})
 
         # Create a delivery tier: 0 to 5 KM = Rs.50
         self.tier = DeliveryTier.objects.create(
@@ -52,7 +53,7 @@ class LocationsTests(APITestCase):
         response = self.client.get(self.warehouse_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            response.data["data"]["latitude"], f"{self.warehouse.latitude:.6f}"
+            response.data["data"][0]["latitude"], f"{self.warehouse.latitude:.6f}"
         )
 
     def test_update_warehouse_unauthorized(self) -> None:
@@ -60,12 +61,12 @@ class LocationsTests(APITestCase):
         Updating the warehouse location requires authentication and admin privileges.
         """
         payload = {"latitude": 24.85, "longitude": 67.02, "max_service_radius_km": 20.0}
-        response = self.client.put(self.warehouse_url, payload, format="json")
+        response = self.client.put(self.warehouse_detail_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Customer role should fail
         self.client.force_authenticate(user=self.customer)
-        response = self.client.put(self.warehouse_url, payload, format="json")
+        response = self.client.put(self.warehouse_detail_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_warehouse_superadmin(self) -> None:
@@ -78,7 +79,7 @@ class LocationsTests(APITestCase):
             "longitude": 67.0420,
             "max_service_radius_km": 10.00,
         }
-        response = self.client.put(self.warehouse_url, payload, format="json")
+        response = self.client.put(self.warehouse_detail_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data["data"]["latitude"], f"{payload['latitude']:.6f}"
@@ -113,3 +114,34 @@ class LocationsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.data["data"]["is_valid"])
         self.assertEqual(float(response.data["data"]["delivery_charge"]), 0.0)
+
+    def test_update_warehouse_with_address(self) -> None:
+        """
+        Super Admin can successfully update the warehouse setting including address.
+        """
+        self.client.force_authenticate(user=self.super_admin)
+        payload = {
+            "latitude": 31.5204,
+            "longitude": 74.3587,
+            "max_service_radius_km": 15.00,
+            "address": "Block 7, Industrial Estate, Lahore",
+        }
+        response = self.client.put(self.warehouse_detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["address"], payload["address"])
+
+    def test_bulk_update_delivery_tiers(self) -> None:
+        """
+        Super Admin can bulk-update all delivery tiers using PUT.
+        """
+        self.client.force_authenticate(user=self.super_admin)
+        payload = [
+            {"from": 0, "to": 5, "charge": 0},
+            {"from": 5, "to": 10, "charge": 100},
+            {"from": 10, "to": 15, "charge": 200},
+        ]
+        response = self.client.put(self.tiers_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["data"]), 3)
+        self.assertEqual(response.data["data"][0]["from"], 0)
+        self.assertEqual(response.data["data"][1]["charge"], 100.0)
