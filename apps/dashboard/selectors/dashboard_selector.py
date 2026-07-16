@@ -34,22 +34,22 @@ class DashboardSelector:
 
         # 3. New Registrations
         new_customers_today = User.objects.filter(
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            Q(role__isnull=True) | Q(user_type=UserType.USER),
             created_at__gte=today_start
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         ).count()
         new_customers_week = User.objects.filter(
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            Q(role__isnull=True) | Q(user_type=UserType.USER),
             created_at__gte=week_start
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         ).count()
         new_customers_month = User.objects.filter(
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            Q(role__isnull=True) | Q(user_type=UserType.USER),
             created_at__gte=month_start
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         ).count()
 
 

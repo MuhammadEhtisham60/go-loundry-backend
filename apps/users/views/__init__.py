@@ -3,5 +3,17 @@ from apps.users.views.user_views import (
     CustomerDetailView,
     CustomerBlockView,
 )
+from apps.users.views.team_views import (
+    UserViewSet,
+    RoleViewSet,
+    PermissionViewSet,
+)
 
-__all__ = ["CustomerListView", "CustomerDetailView", "CustomerBlockView"]
+__all__ = [
+    "CustomerListView",
+    "CustomerDetailView",
+    "CustomerBlockView",
+    "UserViewSet",
+    "RoleViewSet",
+    "PermissionViewSet",
+]

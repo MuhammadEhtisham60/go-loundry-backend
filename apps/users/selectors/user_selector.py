@@ -19,9 +19,9 @@ class UserSelector:
         Supports searching on email, phone, and name.
         """
         queryset = User.objects.filter(
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+            Q(role__isnull=True) | Q(user_type=UserType.USER)
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         )
 
         if search_query:
@@ -43,8 +43,8 @@ class UserSelector:
         """
         return User.objects.filter(
             Q(id=customer_id),
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+            Q(role__isnull=True) | Q(user_type=UserType.USER)
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         ).first()
 

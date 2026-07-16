@@ -33,3 +33,12 @@ urlpatterns = [
     path("api/admin/dashboard/", include("apps.dashboard.urls")),
     path("api/admin/reports/", include("apps.reports.urls")),
 ]
+
+from rest_framework.routers import DefaultRouter
+from apps.users.views import RoleViewSet, PermissionViewSet
+
+router = DefaultRouter()
+router.register(r"api/roles", RoleViewSet, basename="roles")
+router.register(r"api/permissions", PermissionViewSet, basename="permissions")
+
+urlpatterns += router.urls

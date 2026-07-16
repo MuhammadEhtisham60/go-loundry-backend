@@ -52,9 +52,9 @@ class ReportsSelector:
     @staticmethod
     def get_customer_report() -> Dict[str, Any]:
         queryset = User.objects.filter(
-            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+            Q(role__isnull=True) | Q(user_type=UserType.USER)
         ).exclude(
-            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+            role__name__in=["Support Agent", "Admin", "Super Admin"]
         )
 
 
