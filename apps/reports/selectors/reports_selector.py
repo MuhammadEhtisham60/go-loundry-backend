@@ -1,9 +1,9 @@
 from typing import Dict, Any, List
-from django.db.models import Sum, Count, Avg, Case, When, Value, CharField
+from django.db.models import Sum, Count, Avg, Case, When, Value, CharField, Q
 from django.utils.dateparse import parse_date
 
 from apps.orders.models import Order, OrderItem, OrderStatus
-from apps.authentication.models.user import User, UserRole
+from apps.authentication.models.user import User, UserRole, UserType
 
 
 class ReportsSelector:
@@ -51,7 +51,12 @@ class ReportsSelector:
 
     @staticmethod
     def get_customer_report() -> Dict[str, Any]:
-        queryset = User.objects.filter(role=UserRole.CUSTOMER)
+        queryset = User.objects.filter(
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+        )
+
 
         total_customers = queryset.count()
         blocked_count = queryset.filter(is_blocked=True).count()

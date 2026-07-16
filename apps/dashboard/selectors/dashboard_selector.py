@@ -1,9 +1,9 @@
 import datetime
 from typing import Dict, Any
 from django.utils import timezone
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Q
 from apps.orders.models import Order, OrderStatus
-from apps.authentication.models.user import User, UserRole
+from apps.authentication.models.user import User, UserRole, UserType
 from apps.chats.models import Conversation
 
 
@@ -34,14 +34,24 @@ class DashboardSelector:
 
         # 3. New Registrations
         new_customers_today = User.objects.filter(
-            role=UserRole.CUSTOMER, created_at__gte=today_start
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            created_at__gte=today_start
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
         ).count()
         new_customers_week = User.objects.filter(
-            role=UserRole.CUSTOMER, created_at__gte=week_start
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            created_at__gte=week_start
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
         ).count()
         new_customers_month = User.objects.filter(
-            role=UserRole.CUSTOMER, created_at__gte=month_start
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER),
+            created_at__gte=month_start
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
         ).count()
+
 
         # 4. Active Support tickets
         open_chats = Conversation.objects.filter(is_resolved=False).count()

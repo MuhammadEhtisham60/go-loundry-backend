@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet, Q
-from apps.authentication.models.user import UserRole
+from apps.authentication.models.user import UserRole, UserType
 
 User = get_user_model()
 
@@ -18,7 +18,11 @@ class UserSelector:
         Query and return a list of registered customers.
         Supports searching on email, phone, and name.
         """
-        queryset = User.objects.filter(role=UserRole.CUSTOMER)
+        queryset = User.objects.filter(
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+        )
 
         if search_query:
             queryset = queryset.filter(
@@ -37,4 +41,10 @@ class UserSelector:
         """
         Query and return a single customer by their ID.
         """
-        return User.objects.filter(id=customer_id, role=UserRole.CUSTOMER).first()
+        return User.objects.filter(
+            Q(id=customer_id),
+            Q(role=UserRole.CUSTOMER) | Q(user_type=UserType.USER)
+        ).exclude(
+            role__in=[UserRole.SUPPORT_AGENT, UserRole.ADMIN, UserRole.SUPER_ADMIN]
+        ).first()
+

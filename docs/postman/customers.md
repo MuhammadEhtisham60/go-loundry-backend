@@ -8,7 +8,7 @@
 `GET`
 
 ### URL
-`{{BASE_URL}}/api/admin/users/?role=CUSTOMER`
+`{{BASE_URL}}/api/users/`
 
 ### Headers
 ```text
@@ -19,15 +19,16 @@ Authorization: Bearer {{access_token}}
 ```json
 {
   "success": true,
-  "message": "Users list retrieved.",
+  "message": "Customer records list retrieved.",
   "data": [
     {
       "id": "e98e4e94-c782-4f3b-a5cc-efdc5456f91f",
       "email": "customer@example.com",
       "phone": "03001234567",
       "full_name": "John Doe",
-      "role": "CUSTOMER",
-      "is_blocked": false
+      "profile_photo": null,
+      "is_blocked": false,
+      "created_at": "2026-07-16T10:00:00Z"
     }
   ]
 }
@@ -38,30 +39,43 @@ Authorization: Bearer {{access_token}}
 
 ---
 
-## Block Account
+## Block/Unblock Account
 
 ### Method
 `POST`
 
 ### URL
-`{{BASE_URL}}/api/admin/users/e98e4e94-c782-4f3b-a5cc-efdc5456f91f/block/`
+`{{BASE_URL}}/api/users/e98e4e94-c782-4f3b-a5cc-efdc5456f91f/block/`
 
 ### Headers
 ```text
 Authorization: Bearer {{access_token}}
 ```
 
+### Request Body
+```json
+{
+  "is_blocked": true
+}
+```
+
 ### Success Response (200 OK)
 ```json
 {
   "success": true,
-  "message": "User blocked successfully.",
+  "message": "Customer account blocked successfully.",
   "data": {
     "id": "e98e4e94-c782-4f3b-a5cc-efdc5456f91f",
-    "is_blocked": true
+    "email": "customer@example.com",
+    "phone": "03001234567",
+    "full_name": "John Doe",
+    "profile_photo": null,
+    "is_blocked": true,
+    "created_at": "2026-07-16T10:00:00Z"
   }
 }
 ```
 
 ### Permissions
 - Admin and Super Admin only.
+
