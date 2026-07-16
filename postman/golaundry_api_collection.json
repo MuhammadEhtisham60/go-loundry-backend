@@ -588,6 +588,229 @@
       ]
     },
     {
+      "name": "Services Catalog",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/services/?include_inactive=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "include_inactive",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/services/:id/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ":id",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wash & Iron V2\",\n  \"description\": \"Regular laundry services.\",\n  \"unit\": \"PIECE\",\n  \"price\": 180.00,\n  \"is_active\": true,\n  \"display_order\": 4\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/services/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Service (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wash & Iron V2 Updated\",\n  \"description\": \"Updated description.\",\n  \"unit\": \"PIECE\",\n  \"price\": 195.00,\n  \"is_active\": true,\n  \"display_order\": 4\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/services/:id/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ":id",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Partial Update Service (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 210.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/services/:id/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ":id",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/services/:id/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                ":id",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reorder Services",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"services\": [\n    {\n      \"id\": \"service-uuid-1\",\n      \"display_order\": 1\n    },\n    {\n      \"id\": \"service-uuid-2\",\n      \"display_order\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/services/reorder/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "services",
+                "reorder",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Admin Reports",
       "item": [
         {

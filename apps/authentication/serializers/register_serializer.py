@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from apps.authentication.models.user import UserType
 User = get_user_model()
 
 
@@ -22,7 +23,7 @@ class RegisterSerializer(serializers.Serializer):
         write_only=True, required=False, allow_null=True, default=None
     )
     full_name = serializers.CharField(max_length=255, required=False, allow_blank=True, default="")
-    user_type = serializers.ChoiceField(choices=[("user", "User"), ("admin", "Admin")], required=False, default="user")
+    user_type = serializers.ChoiceField(choices=UserType.choices, required=False, default=UserType.USER)
 
     def validate(self, data):
         email = data.get("email")

@@ -1,9 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.services_catalog.models import Service
 from apps.services_catalog.services import CatalogService
 from apps.services_catalog.selectors import CatalogSelector
 from apps.services_catalog.serializers import (
@@ -31,7 +33,10 @@ class ServiceListView(APIView):
         is_admin_user = (
             request.user
             and request.user.is_authenticated
-            and request.user.role in ["ADMIN", "SUPER_ADMIN"]
+            and (
+                request.user.role in ["ADMIN", "SUPER_ADMIN"]
+                or request.user.user_type in ["admin", "super_admin"]
+            )
         )
 
         include_inactive = is_admin_user and request.query_params.get(
@@ -64,13 +69,52 @@ class ServiceListView(APIView):
 
 class ServiceDetailView(APIView):
     """
-    API View to update and soft-delete individual service items.
-    Requires Admin privileges.
+    API View to retrieve, update, and soft-delete individual service items.
+    GET is public; PUT, PATCH, and DELETE require Admin privileges.
     """
 
-    permission_classes = [IsAdmin]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [IsAdmin()]
+
+    def get(self, request: Request, pk: str) -> Response:
+        is_admin_user = (
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.role in ["ADMIN", "SUPER_ADMIN"]
+                or request.user.user_type in ["admin", "super_admin"]
+            )
+        )
+
+        service = get_object_or_404(Service, id=pk)
+
+        if not is_admin_user and not service.is_active:
+            from django.http import Http404
+            raise Http404("No Service matches the given query.")
+
+        serializer = ServiceSerializer(service)
+        return StandardResponse(
+            data=serializer.data,
+            message="Service details retrieved successfully.",
+            status=status.HTTP_200_OK,
+        )
 
     def put(self, request: Request, pk: str) -> Response:
+        serializer = ServiceSerializer(data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+
+        service = CatalogService.update_service(pk, serializer.validated_data)
+        result_serializer = ServiceSerializer(service)
+
+        return StandardResponse(
+            data=result_serializer.data,
+            message="Catalog service updated successfully.",
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request: Request, pk: str) -> Response:
         serializer = ServiceSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 

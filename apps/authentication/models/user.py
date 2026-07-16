@@ -15,6 +15,7 @@ class UserRole(models.TextChoices):
 class UserType(models.TextChoices):
     USER = "user", "User"
     ADMIN = "admin", "Admin"
+    SUPER_ADMIN = "super_admin", "Super Admin"
 
 
 class UserManager(BaseUserManager):
@@ -81,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=20, choices=UserRole.choices, default=UserRole.CUSTOMER
     )
     user_type = models.CharField(
-        max_length=10, choices=UserType.choices, default=UserType.USER
+        max_length=20, choices=UserType.choices, default=UserType.USER
     )
     is_blocked = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

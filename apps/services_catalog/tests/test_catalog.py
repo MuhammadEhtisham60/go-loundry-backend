@@ -134,3 +134,118 @@ class ServicesCatalogTests(APITestCase):
         self.service2.refresh_from_db()
         self.assertEqual(self.service1.display_order, 10)
         self.assertEqual(self.service2.display_order, 5)
+
+    def test_retrieve_active_service_customer(self) -> None:
+        """
+        Customers should be allowed to retrieve details of an active service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["name"], "Wash & Iron")
+
+    def test_retrieve_inactive_service_customer(self) -> None:
+        """
+        Customers should not be allowed to retrieve details of an inactive service (returns 404).
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service3.id)}
+        )
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_inactive_service_admin(self) -> None:
+        """
+        Admins should be allowed to retrieve details of an inactive service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service3.id)}
+        )
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["name"], "Blanket Wash")
+
+    def test_retrieve_soft_deleted_service(self) -> None:
+        """
+        Soft-deleted services should not be retrievable by anyone (returns 404).
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        self.client.force_authenticate(user=self.admin)
+        # Soft delete it first
+        delete_response = self.client.delete(detail_url)
+        self.assertEqual(delete_response.status_code, status.HTTP_200_OK)
+
+        # Try to retrieve it
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_put_service_admin(self) -> None:
+        """
+        Admins can perform a full update (PUT) of a service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        self.client.force_authenticate(user=self.admin)
+        payload = {
+            "name": "Wash & Iron V2",
+            "description": "Updated machine wash and press",
+            "price": 180.00,
+            "unit": "PIECE",
+            "is_active": True,
+            "display_order": 1,
+        }
+        response = self.client.put(detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["name"], "Wash & Iron V2")
+        self.assertEqual(float(response.data["data"]["price"]), 180.00)
+
+    def test_put_service_customer(self) -> None:
+        """
+        Customers cannot perform a PUT update of a service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        self.client.force_authenticate(user=self.customer)
+        payload = {
+            "name": "Wash & Iron V2",
+            "price": 180.00,
+        }
+        response = self.client.put(detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_patch_service_admin(self) -> None:
+        """
+        Admins can perform a partial update (PATCH) of a service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        self.client.force_authenticate(user=self.admin)
+        payload = {
+            "price": 190.00,
+        }
+        response = self.client.patch(detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["data"]["name"], "Wash & Iron") # Unchanged
+        self.assertEqual(float(response.data["data"]["price"]), 190.00) # Updated
+
+    def test_patch_service_customer(self) -> None:
+        """
+        Customers cannot perform a PATCH update of a service.
+        """
+        detail_url = reverse(
+            "services_catalog:service_detail", kwargs={"pk": str(self.service1.id)}
+        )
+        self.client.force_authenticate(user=self.customer)
+        payload = {
+            "price": 190.00,
+        }
+        response = self.client.patch(detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
