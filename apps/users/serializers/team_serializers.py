@@ -134,22 +134,34 @@ class UserWriteSerializer(serializers.ModelSerializer):
 
 class UserInviteSerializer(serializers.Serializer):
     """
-    Validation payload for inviting a new team member.
+    Validation payload for creating a new team member with auto-generated credentials.
     """
 
     full_name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
     role_id = serializers.IntegerField()
+    user_type = serializers.ChoiceField(
+        choices=["user", "admin", "super_admin"],
+        default="admin",
+        required=False,
+    )
 
     def validate_email(self, value: str) -> str:
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
+    def validate_phone(self, value: str) -> str:
+        if value and User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return value
+
     def validate_role_id(self, value: int) -> int:
         if not Role.objects.filter(id=value).exists():
             raise serializers.ValidationError("Role does not exist.")
         return value
+
 
 
 class CompleteSignupSerializer(serializers.Serializer):

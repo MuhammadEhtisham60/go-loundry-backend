@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 
 from apps.authentication.models.role import Role, Permission
 from apps.users.permissions import HasPermissionCode
+from apps.users.emails import generate_password, send_team_member_credentials
 from apps.users.serializers.team_serializers import (
     RoleSerializer,
     RoleWriteSerializer,
@@ -142,43 +143,63 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated, HasPermissionCode("users")], url_path="invite")
     def invite(self, request) -> Response:
         """
-        Invites a new team member and returns a secure token link (stub).
+        Create a new team member immediately (active) with an auto-generated
+        password and send login credentials to their email address.
         """
         serializer = UserInviteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        full_name = serializer.validated_data["full_name"]
-        email = serializer.validated_data["email"]
-        role_id = serializer.validated_data["role_id"]
+        full_name  = serializer.validated_data["full_name"]
+        email      = serializer.validated_data["email"]
+        role_id    = serializer.validated_data["role_id"]
+        phone      = serializer.validated_data.get("phone") or None
+        user_type  = serializer.validated_data.get("user_type", "admin")
 
         role = get_object_or_404(Role, id=role_id)
-        token = secrets.token_urlsafe(32)
 
-        # Create user as pending
-        user = User.objects.create(
+        # ── Generate secure password ─────────────────────────────────────────
+        password = generate_password()
+
+        # ── Create user (active immediately — no invite-token step needed) ───
+        user = User.objects.create_user(
             email=email,
+            phone=phone,
+            password=password,
             full_name=full_name,
             role=role,
-            is_active=False,
-            invite_status="pending",
-            invite_token=token,
+            user_type=user_type,
+            is_active=True,
+            invite_status="active",
             invited_by=request.user,
+            last_active=timezone.now(),
         )
 
-        invite_link = f"http://localhost:5173/complete-signup?token={token}"
-        print(f"DEBUG: Sent invite email to {email} with link: {invite_link}")
+        # ── Send credentials email ───────────────────────────────────────────
+        email_sent = send_team_member_credentials(
+            full_name=full_name,
+            email=email,
+            password=password,
+            role_name=role.name,
+        )
 
         return StandardResponse(
             data={
-                "id": user.id,
+                "id": str(user.id),
                 "full_name": user.full_name,
                 "email": user.email,
-                "invite_token": token,
-                "invite_link": invite_link,
+                "phone": user.phone,
+                "user_type": user.user_type,
+                "role": role.name,
+                "email_sent": email_sent,
             },
-            message="User invited successfully.",
+            message=(
+                f"User created and credentials emailed to {email}."
+                if email_sent
+                else f"User created but email delivery failed — share credentials manually."
+            ),
             status=status.HTTP_201_CREATED,
         )
+
 
     @action(detail=False, methods=["post"], permission_classes=[AllowAny], url_path="complete-signup")
     def complete_signup(self, request) -> Response:
@@ -292,11 +313,13 @@ class RoleViewSet(viewsets.ModelViewSet):
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for listing available permission codes and labels.
+    Read-only metadata endpoint — accessible to any authenticated team member
+    so the role editor UI can render permission toggles for all admins.
     """
 
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
-    permission_classes = [IsAuthenticated, HasPermissionCode("users")]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs) -> Response:
         queryset = self.get_queryset()

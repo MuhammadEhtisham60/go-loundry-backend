@@ -18,8 +18,10 @@ class HasPermissionCode(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        # Super Admin role / is_superuser bypasses all checks
+        # Super Admin bypasses all permission code checks
         if request.user.is_superuser:
+            return True
+        if getattr(request.user, "user_type", None) == "super_admin":
             return True
         if request.user.role and request.user.role.name == "Super Admin":
             return True
